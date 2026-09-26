@@ -31,6 +31,27 @@ function MapUpdater({ p1, p2 }: { p1?: [number, number], p2?: [number, number] }
   return null
 }
 
+function MapClickHandler({ pickUp, drop, p1, p2, setP1, setP2, loadRoute, onChange, reverseGeoCoding }: any) {
+  useMapEvents({
+    click: async (e) => {
+      const { lat, lng } = e.latlng
+      const addr = await reverseGeoCoding(lat, lng)
+      if (addr) {
+        if (!pickUp) {
+          setP1([lat, lng])
+          if (p2) loadRoute([lat, lng], p2)
+          onChange?.(addr, drop)
+        } else {
+          setP2([lat, lng])
+          if (p1) loadRoute(p1, [lat, lng])
+          onChange?.(pickUp, addr)
+        }
+      }
+    }
+  })
+  return null
+}
+
 
 const pickUpIcon = new L.DivIcon({
   html: `<div style="display:flex;flex-direction:column;align-items:center;filter:drop-shadow(0 6px 18px rgba(0,0,0,0.22))">
@@ -106,20 +127,22 @@ function SearchMap({ pickUp, drop, onChange, onDistance }: props) {
   }
 
   const reverseGeoCoding=async (lat:number,lon:number)=>{
-
-    const {data}=await axios.get("https://api.geoapify.com/v1/geocode/reverse",{
-          params:{
-            lat,
-            lon,
-            apiKey:process.env.NEXT_PUBLIC_GEOAPIFY_API_KEY,
-            filter:"countrycode:in"
-          }
-        })
-        
-       if(!data.features.length)return;
+    try {
+      const {data}=await axios.get("https://api.geoapify.com/v1/geocode/reverse",{
+            params:{
+              lat,
+              lon,
+              apiKey:process.env.NEXT_PUBLIC_GEOAPIFY_API_KEY,
+              filter:"countrycode:in"
+            }
+          })
+          
+        if(!data.features.length) return "Selected Location";
         const p=data.features[0].properties
-        return [p.name,p.street,p.city,p.state,p.country].filter(Boolean).join(",")
-
+        return [p.name,p.street,p.city,p.state,p.country].filter(Boolean).join(",") || "Selected Location"
+    } catch (e) {
+      return `Location (${lat.toFixed(4)}, ${lon.toFixed(4)})`
+    }
   }
 
   const loadRoute = async (p: [number, number], d: [number, number]) => {
@@ -153,26 +176,7 @@ function SearchMap({ pickUp, drop, onChange, onDistance }: props) {
      onChange?.(pickUp,addr!)
   }
 
-  function MapClickHandler() {
-    useMapEvents({
-      click: async (e) => {
-        const { lat, lng } = e.latlng
-        const addr = await reverseGeoCoding(lat, lng)
-        if (addr) {
-          if (!pickUp) {
-            setP1([lat, lng])
-            if (p2) loadRoute([lat, lng], p2)
-            onChange?.(addr, drop)
-          } else {
-            setP2([lat, lng])
-            if (p1) loadRoute(p1, [lat, lng])
-            onChange?.(pickUp, addr)
-          }
-        }
-      }
-    })
-    return null
-  }
+
 
 
 
@@ -217,7 +221,7 @@ function SearchMap({ pickUp, drop, onChange, onDistance }: props) {
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
 
         <MapUpdater p1={p1} p2={p2} />
-        <MapClickHandler />
+        <MapClickHandler pickUp={pickUp} drop={drop} p1={p1} p2={p2} setP1={setP1} setP2={setP2} loadRoute={loadRoute} onChange={onChange} reverseGeoCoding={reverseGeoCoding} />
 
         {p1 && <Marker
           position={p1}
