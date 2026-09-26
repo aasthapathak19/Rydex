@@ -27,7 +27,7 @@ try {
     
 } catch (error) {
     return NextResponse.json(
-                    { success: false ,message:`cash confirm error ${error}`},
+                    { success: false ,message:"cash confirm error"},
                     { status: 500 }
                 )
 }

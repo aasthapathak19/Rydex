@@ -36,7 +36,7 @@ export async function POST(req:NextRequest) {
     } catch (error) {
          return NextResponse.json(
             {
-                message:`payment create error ${error}`
+                message:"payment create error"
             }
             ,
             {status:500}

@@ -27,7 +27,7 @@ export async function GET(req:NextRequest) {
         })
         return NextResponse.json(count,{status:200})
     } catch (error) {
-         return NextResponse.json({ message: `fetch pending req count error ${error}` }
+         return NextResponse.json({ message: "fetch pending req count error" }
                 , { status: 500 }
             )
     }

@@ -1,249 +1,43 @@
 'use client'
-import { RootState } from '@/redux/store';
-import React, { useEffect, useState } from 'react'
-import { useSelector } from 'react-redux';
-import { motion } from "motion/react"
-import { ArrowRight, Check, Clock, Lock, Video } from 'lucide-react';
-import { useRouter } from 'next/navigation';
-import RejectionCard from './RejectionCard';
-import StatusCard from './StatusCard';
-import ActionCard from './ActionCard';
-import axios from 'axios';
-import PricingModal from './PricingModal';
-import { IVehicle } from '@/models/vehicle.model';
-import PartnerEarning from './PartnerEarning';
-type Step = {
-    id: number,
-    title: string,
-    route?: string
-};
+import { useEffect, useState } from "react"
+import Link from "next/link"
+import axios from "axios"
+import { useSelector } from "react-redux"
+import type { RootState } from "@/redux/store"
+import type { IVehicle } from "@/models/vehicle.model"
+import { hasPricing } from "@/lib/partner-application"
+import AdvancedVerification from "./AdvancedVerification"
+import PartnerEarning from "./PartnerEarning"
 
-/* ================= STEPS ================= */
-
-const STEPS: Step[] = [
-    { id: 1, title: "Vehicle", route: "/partner/onboarding/vehicle" },
-    { id: 2, title: "Documents", route: "/partner/onboarding/documents" },
-    { id: 3, title: "Bank", route: "/partner/onboarding/bank" },
-    { id: 4, title: "Review" },
-    { id: 5, title: "Video KYC" },
-    { id: 6, title: "Pricing" },
-    { id: 7, title: "Final Review" },
-    { id: 8, title: "Live" },
-];
-
-const TOTAL_STEPS = STEPS.length;
-
-function PartnerDashboard() {
-    const [activeStep, setActiveStep] = useState(0)
+export default function PartnerDashboard() {
     const { userData } = useSelector((state: RootState) => state.user)
-    const router = useRouter()
-    const [requestLoading,setRequestLoading]=useState(false)
-    const [showPricing,setShowPricing]=useState(false)
-    const [vehicleData,setVehicleData]=useState<IVehicle | null>(null)
+    const [vehicle, setVehicle] = useState<IVehicle | null>(null)
+    const [loading, setLoading] = useState(true)
+    const [error, setError] = useState("")
     useEffect(() => {
-        if (userData) {
-            setActiveStep(userData.partnerOnBoardingSteps + 1)
-        }
-    }, [userData])
-
-    const handleGetPricing=async ()=>{
-        try {
-            const {data}=await axios.get("/api/partner/onboarding/pricing")
-            console.log(data)
-            setVehicleData(data)
-        } catch (error) {
-            console.log(error)
-        }
-    }
-    useEffect(()=>{
-      handleGetPricing()
-    },[])
-
-    const goToStep = (step: Step) => {
-
-        if(step.id==6 && userData?.partnerStatus==="approved" && userData.videoKycStatus==="approved"){
-            setShowPricing(true)
-            return;
-        }
-        if (step.route && step.id <= activeStep) {
-            router.push(step.route)
-        }
-    }
-
-    const progressPercentage = ((activeStep - 1) / (TOTAL_STEPS - 1)) * 100
-    return (
-        <div className='min-h-screen bg-linear-to-br from-gray-100 to-gray-200 px-4 pt-28 pb-20'>
-            <div className='max-w-7xl mx-auto space-y-16'>
-                <div>
-                    <h1 className='text-4xl font-bold'>Partner Onboarding</h1>
-                    <p className='text-gray-600 mt-3'>Complete all steps to activate your account</p>
-                </div>
-
-                <div className='bg-white rounded-3xl p-10 shadow-xl border overflow-x-auto'>
-                    <div className='relative min-w-[800px]'>
-
-                        <div className='absolute top-7 left-0 w-full h-[3px] bg-gray-200 rounded-full' />
-                        <motion.div
-                            animate={{ width: `${progressPercentage}%` }}
-                            transition={{ duration: 0.6 }}
-                            className="absolute top-7 left-0 h-[3px] bg-black rounded-full"
-                        />
-                        <div className='relative flex justify-between'>
-                            {STEPS.map((s, index) => {
-                                const completed = s.id < activeStep
-                                const active = s.id == activeStep
-                                const locked = s.id > activeStep
-
-                                return (
-                                    <motion.div
-                                        key={s.id}
-                                        whileHover={!locked ? { scale: 1.1 } : {}}
-                                        onClick={() => goToStep(s)}
-                                        className="flex flex-col items-center z-10 cursor-pointer"
-                                    >
-                                        <div
-                                            className={`w-14 h-14 rounded-full flex items-center justify-center border-2 transition-all
-                                                     ${completed
-                                                    ? "bg-black text-white border-black"
-                                                    : active
-                                                        ? "border-black bg-white"
-                                                        : "border-gray-300 text-gray-400 bg-white"
-                                                }`}
-                                        >
-                                            {
-                                                completed ? (
-                                                    <Check size={20} />
-                                                ) : locked ? (
-                                                    <Lock size={20} />
-                                                ) : (
-                                                    s.id
-                                                )
-                                            }
-
-                                        </div>
-                                        <p className='mt-3 text-sm font-semibold text-center'>{s.title}</p>
-
-                                    </motion.div>
-                                )
-                            })}
-                        </div>
-                    </div>
-                </div>
-
-                {
-                    activeStep == 4 && userData?.partnerStatus === "rejected" && (
-                        <RejectionCard
-                            title="Partner Rejected"
-                            reason={userData.rejectionReason}
-                            actionLabel={`Review and Update`}
-                            onAction={() => {
-                                router.push("/partner/onboarding/vehicle")
-                            }}
-                        />
-                    )
-
-                }
-
-                {
-                    activeStep == 4 && userData?.partnerStatus === "pending" && (
-                        <StatusCard
-                            icon={<Clock size={18} />}
-                            title={"Documents under review"}
-                            desc={"Admin is verifying your documents."}
-                        />
-                    )
-                }
-
-
-
-                {
-                    activeStep==5 && (
-                    userData?.videoKycStatus === "approved" ? (
-                        <StatusCard
-                            icon={<Check size={18} />}
-                            title={"video kyc approved"}
-                            desc={"You can now proceed to pricing."}
-                        />
-                    ) :   userData?.videoKycStatus === "rejected" ? (
-                        <RejectionCard
-                            title="Video KYC Rejected"
-                            reason={userData?.videoKycRejectionReason}
-                            actionLabel={requestLoading?"Requesting...":"Request Again"}
-                            onAction={async ()=>{
-                                setRequestLoading(true)
-                              await axios.get("/api/partner/video-kyc/request")
-                              setRequestLoading(false)
-                            }}
-                        />
-                    ):   userData?.videoKycStatus === "in_progress" && userData?.videoKycRoomId ?(
-                        <ActionCard
-                        icon={<Video size={18}/>}
-                        title={"Admin Started Video KYC"}
-                        button={"Join Call"}
-                        onclick={
-                            ()=>router.push(`/video-kyc/${userData.videoKycRoomId}`)
-                        }
-                        />
-                    ):
-                    <StatusCard
-                     icon={<Clock size={20} />}
-                     title="Waiting for Admin"
-                      desc="Admin will initiate Video KYC shortly."
-                    />
-                )
-
-                
-            
-                }
-
-                
-
-{activeStep==7  && vehicleData?.status=="pending" && (
-    <StatusCard
-     icon={<Clock size={20} />}
-        title="Pricing Under Review"
-        desc="Admin is reviewing your pricing."
-    />
-)}
-{activeStep==7  && vehicleData?.status=="rejected" && (
-    <RejectionCard
-      title="Pricing Rejected"
-        reason={vehicleData.rejectionReason}
-        actionLabel="Edit & Resubmit"
-        onAction={() => setShowPricing(true)}
-    />
-)}
-
-{activeStep==8 && vehicleData?.status=="approved" && (
-    <motion.div
-    initial={{ opacity: 0, y: 30 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="bg-black text-white rounded-3xl p-10 shadow-2xl"
-    >
-        <h2 className='text-2xl font-bold'>
-            🚀 You're Live
-        </h2>
-
-        <button className='mt-6 bg-white text-black px-6 py-3 rounded-xl font-semibold flex items-center gap-2'>
-         Go to Bookings <ArrowRight size={16}/>
-        </button>
-
-    </motion.div>
-)}
-
-
-          <PartnerEarning/>
-            </div>
-          
-          <PricingModal
-          open={showPricing}
-          onClose={()=>setShowPricing(false)}
-          data={vehicleData}
-          />
-
-
+        axios.get("/api/partner/onboarding/vehicle").then(({ data }) => setVehicle(data))
+            .catch(() => setError("Unable to load your application. Refresh to retry."))
+            .finally(() => setLoading(false))
+    }, [])
+    const approved = userData?.partnerStatus === "approved" && vehicle?.status === "approved"
+    const rejected = userData?.partnerStatus === "rejected" || vehicle?.status === "rejected"
+    const submitted = !!userData?.partnerApplicationSubmittedAt
+    const stage = !vehicle || !userData?.mobileNumber ? 1 : !hasPricing(vehicle) ? 2 : 3
+    const stages = [["Profile & Vehicle", "vehicle"], ["Vehicle Image & Pricing", "pricing"], ["Review & Submit", "review"]]
+    return <main className="min-h-screen bg-linear-to-br from-gray-100 to-gray-200 px-4 pt-28 pb-16">
+        <div className="mx-auto max-w-5xl space-y-8">
+            <header><h1 className="text-3xl font-bold">Partner Dashboard</h1><p className="mt-2 text-gray-600">Manage your application, vehicle and rides.</p></header>
+            {loading || !userData ? <p role="status">Loading application…</p> : error ? <p role="alert">{error}</p> : <>
+                <section className="rounded-3xl bg-white p-6 sm:p-8 shadow-sm">
+                    <h2 className="text-xl font-semibold">Application Status: {approved ? "Approved" : rejected ? "Rejected" : submitted ? "Under review" : "Draft"}</h2>
+                    <p className="mt-3 text-gray-600">{approved ? "Your partner application and vehicle are approved for ride booking." : rejected ? userData.rejectionReason || vehicle?.rejectionReason || "Update your application and resubmit." : submitted ? "Application submitted for admin review." : "Complete the three steps below to submit your application."}</p>
+                    {approved && <Link className="mt-5 inline-block rounded-xl bg-black px-5 py-3 text-white" href="/partner/pending-requests">Go to ride requests</Link>}
+                </section>
+                <ol className="grid gap-4 sm:grid-cols-3">{stages.map(([title, path], index) => <li key={path} className="rounded-2xl border border-gray-200 bg-white p-5"><p className="text-xs text-gray-500">Step {index + 1}</p><h3 className="mt-2 font-semibold">{title}</h3>{index + 1 <= stage ? <Link href={`/partner/onboarding/${path}`} className="mt-4 inline-block text-sm underline">{approved || submitted || rejected ? "Review / edit" : "Continue"}</Link> : <p className="mt-4 text-sm text-gray-400">Complete the previous step</p>}</li>)}</ol>
+                {(approved || submitted) && <p className="text-sm text-gray-500">Saving changes returns your application to draft. Submit it again for admin review.</p>}
+            </>}
+            <AdvancedVerification />
+            <PartnerEarning />
         </div>
-    )
+    </main>
 }
-
-export default PartnerDashboard

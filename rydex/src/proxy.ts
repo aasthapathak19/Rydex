@@ -10,7 +10,7 @@ export async function proxy(req: NextRequest) {
     if (
         pathname.startsWith("/_next") ||
         pathname.startsWith("/favicon.ico")||
-        /\.(png|jpg|jpeg|gif|svg|webp|ico)$/i.test(pathname)
+        (!pathname.startsWith("/api/") && /\.(png|jpg|jpeg|gif|svg|webp|ico)$/i.test(pathname))
     ) {
         return NextResponse.next()
     }
@@ -24,11 +24,20 @@ export async function proxy(req: NextRequest) {
     }
 
     const session = await auth()
-    if (!session) {
+    if (!session?.user) {
+        if (pathname.startsWith("/api/")) return Response.json({ message: "Unauthorized" }, { status: 401 })
         return NextResponse.redirect(new URL("/", req.url))
     }
 
     const role = session.user?.role
+
+    if (pathname.startsWith("/api/admin/") && role !== "admin") {
+        return Response.json({ message: "Admin access required" }, { status: 403 })
+    }
+    if (pathname.startsWith("/api/partner/") && role !== "partner" &&
+        !(pathname === "/api/partner/onboarding/vehicle" && role === "user")) {
+        return Response.json({ message: "Partner access required" }, { status: 403 })
+    }
 
     if (pathname.startsWith("/admin")) {
         if (role != "admin") {

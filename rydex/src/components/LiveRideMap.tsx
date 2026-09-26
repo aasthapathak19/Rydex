@@ -1,6 +1,6 @@
 import { LatLngExpression } from 'leaflet'
 import React, { useEffect, useState } from 'react'
-import { MapContainer, Marker, Polyline, TileLayer } from 'react-leaflet'
+import { MapContainer, Marker, Polyline, TileLayer, useMap } from 'react-leaflet'
 import L from "leaflet"
 import axios from 'axios'
 type Props = {
@@ -13,6 +13,22 @@ type Props = {
         etaToPickUp:number,
       distanceToDrop:number,etaToDrop:number
     })=>void
+}
+
+function MapUpdater({ p1, p2 }: { p1?: [number, number] | null, p2?: [number, number] | null }) {
+  const map = useMap()
+  useEffect(() => {
+    setTimeout(() => { map.invalidateSize() }, 100)
+    
+    if (p1 && p2) {
+      map.fitBounds([p1, p2], { padding: [72, 72], maxZoom: 15, animate: true, duration: 1 })
+    } else if (p1) {
+      map.setView(p1, 15, { animate: true })
+    } else if (p2) {
+      map.setView(p2, 15, { animate: true })
+    }
+  }, [p1, p2, map])
+  return null
 }
 
 const pickUpIcon = new L.DivIcon({
@@ -93,7 +109,7 @@ function LiveRideMap({ driverLocation, dropLocation, pickUpLocation, mapStatus,o
                         pLat,
                         pLon
                     )
- console.log(pickUpRoute)
+
                     const dropRoute = await getRoute(
                         dLat,
                         dLon,
@@ -137,7 +153,7 @@ function LiveRideMap({ driverLocation, dropLocation, pickUpLocation, mapStatus,o
                 })
                 }
             } catch (error) {
-             console.log(error)
+
             }
         }
 
@@ -153,20 +169,21 @@ const showDropRoute=mapStatus!="completed" && routeToDrop.length>0
         <div className='relative h-full w-full bg-zinc-100'>
             <MapContainer
                 style={{ width: "100%", height: "100%" }}
-                center={pickUpLocation as any}
+                center={pickUpLocation ?? [0, 0] as any}
                 zoom={13}
                 zoomControl={false}
             >
 
 
                 <TileLayer
+                    attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                    url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
 
-                    attribution='&copy; <a href="https://carto.com/">"CARTO"</a> contributors'
-                    url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png" />
+                <MapUpdater p1={driverLocation || undefined} p2={pickUpLocation || dropLocation || undefined} />
 
 
 
-                {showPickMarker && <Marker
+                {pickUpLocation && <Marker
                     position={pickUpLocation as any}
                     icon={pickUpIcon}
                     draggable

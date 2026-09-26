@@ -52,13 +52,13 @@ export async function POST(req: NextRequest) {
 
         
         return NextResponse.json(
-            user,
+            { message: "Email verification code sent" },
             { status: 201 }
         )
 
     } catch (error) {
         return NextResponse.json(
-            { message: `register error ${error}` },
+            { message: "Registration failed" },
             { status: 500 }
         )
     }

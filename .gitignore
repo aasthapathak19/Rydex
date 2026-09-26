@@ -1,0 +1,8 @@
+.env
+.env.*
+**/.env
+**/.env.*
+node_modules/
+lint-before.txt
+typecheck-before.txt
+*-check.txt

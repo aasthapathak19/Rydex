@@ -15,14 +15,19 @@ export async function POST(req:NextRequest) {
         }
 const {bookingId}=await req.json()
 
-const booking=await Booking.findById(bookingId).populate("user vehicle driver")
+const user = await User.findOne({ email: session.user.email }).select("_id")
+if (!user) return NextResponse.json({ message: "Unauthorized" }, { status: 401 })
+const booking=await Booking.findOne({ _id: bookingId, user: user._id })
+    .populate("user driver", "name email mobileNumber")
+    .populate("vehicle", "type vehicleModel number")
+if (!booking) return NextResponse.json({ message: "Ride not found" }, { status: 404 })
 
 return NextResponse.json(booking
                 , { status: 200 }
             )
 
     } catch (error) {
-        return NextResponse.json({ message: `get active ride user error ${error}` }
+        return NextResponse.json({ message: "get active ride user error" }
                 , { status: 500 }
             )
     }

@@ -18,7 +18,7 @@ function PartnerEarning() {
                 const last7DaysData: Earning[] = data.slice(-7)
                 setEarningData(last7DaysData)
             } catch (error) {
-                console.log(error)
+
             }
         }
         fetchEarning()

@@ -25,9 +25,6 @@ const getVehicleIcon = (vehicleType?: string) => {
 
 function PanelContent({ isActive, displayDistance, displayEta, cfg, status, booking, paymentStatus, canChat, chatOpen, onChatToggle, currentRole }: any) {
 
-    console.log(booking)
-
-
     return (
         <div className='flex flex-col pt-5 pb-4 gap-3'>
             {isActive && (

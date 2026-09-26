@@ -21,7 +21,7 @@ function AuthModal({ open, onClose }: propType) {
     const [otp, setOtp] = useState(["", "", "", "", "", ""])
 
     const session = useSession()
-    console.log(session)
+
     const handleSignUp = async () => {
         setLoading(true)
         try {
@@ -42,7 +42,7 @@ function AuthModal({ open, onClose }: propType) {
             const { data } = await axios.post("/api/auth/verify-email", {
                 email,otp:otp.join("")
             })
-           console.log(data)
+
            setOtp(["", "", "", "", "", ""])
            setErr("")
             setStep("login")
@@ -59,7 +59,6 @@ function AuthModal({ open, onClose }: propType) {
             email, password, redirect: false
         })
         setLoading(false)
-        console.log(res)
 
     }
 

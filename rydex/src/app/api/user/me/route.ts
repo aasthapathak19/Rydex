@@ -1,3 +1,4 @@
+import { PROFILE_FIELDS } from "@/lib/partner-application"
 import { auth } from "@/auth";
 import connectDb from "@/lib/db";
 import User from "@/models/user.model";
@@ -12,7 +13,7 @@ export async function GET(req:Request) {
                 {status:400}
             )
         }
-        const user=await User.findOne({email:session.user.email})
+        const user=await User.findOne({email:session.user.email}).select(PROFILE_FIELDS)
         if(!user){
              return Response.json(
                 {message:"user not found!"},
@@ -26,7 +27,7 @@ export async function GET(req:Request) {
             )
     } catch (error) {
          return Response.json(
-                {message:`get me error ${error}`},
+                {message:"get me error"},
                 {status:500}
             )
     }

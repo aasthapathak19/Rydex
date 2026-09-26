@@ -37,11 +37,11 @@ messagesEndRef.current?.scrollIntoView({behavior:"smooth"})
                 text,
                 bookingId
             })
-            console.log(data)
+
             socket.emit("chat-message",data)
           
         } catch (error) {
-            console.log(error)
+
         }
     }
     const getAllMsgs = async () => {
@@ -49,11 +49,11 @@ messagesEndRef.current?.scrollIntoView({behavior:"smooth"})
             const { data } = await axios.post("/api/chat/get-all", {
                 bookingId
             })
-            console.log(data)
+
             setMessages(data)
             setLastMessage(data[0])
         } catch (error:any) {
-            console.log(error.response.data.message)
+
         }
     }
 
@@ -86,7 +86,7 @@ messagesEndRef.current?.scrollIntoView({behavior:"smooth"})
          setSuggestions(jsonData.suggestions)
             setAiLoading(false)
         } catch (error) {
-            console.log(error)
+
             setAiLoading(false)
         }
     }

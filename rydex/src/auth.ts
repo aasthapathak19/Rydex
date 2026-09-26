@@ -52,11 +52,12 @@ Google({
     async signIn({user,account}){
       if(account?.provider=="google"){
         await connectDb()
-        const dbUser=await User.findOne({email:user.email})
+        let dbUser=await User.findOne({email:user.email})
         if(!dbUser){
-            await User.create({
+            dbUser = await User.create({
                 name:user.name,
-                email:user.email
+                email:user.email,
+                isEmailVerified:true
             })
         }
     
@@ -73,6 +74,11 @@ Google({
       token.email=user.email,
       token.role=user.role
     }
+   if (token.email) {
+     await connectDb()
+     const current = await User.findOne({ email: token.email }).select("role")
+     if (current) token.role = current.role
+   }
    return token
    },
    async session ({token,session}){

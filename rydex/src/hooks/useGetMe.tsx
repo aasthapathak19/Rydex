@@ -16,7 +16,7 @@ const getMe=async ()=>{
     const {data}=await axios.get("/api/user/me")
     dispatch(setUserData(data))
     } catch (error) {
-        console.log(error)
+
     }
  
 }

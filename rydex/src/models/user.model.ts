@@ -1,12 +1,4 @@
-import mongoose, { Document, Mongoose } from "mongoose";
-
-type VideoKycStatus=
-   "not_required"
-  | "pending"
-  | "in_progress"
-  | "approved"
-  | "rejected";
-
+import mongoose, { Document } from "mongoose";
 
 export interface IUser extends Document{
 name:string;
@@ -17,12 +9,10 @@ isEmailVerified?:boolean
 otp?:string,
 otpExpiresAt?:Date
 partnerOnBoardingSteps:number
+partnerApplicationSubmittedAt?:Date
 mobileNumber?:string
 partnerStatus:"pending" | "approved" | "rejected"
 rejectionReason?:string
-videoKycStatus:VideoKycStatus
-videoKycRoomId:string
-videoKycRejectionReason:string
 socketId:string |null
 location?:{
     type:"Point",
@@ -58,9 +48,10 @@ isEmailVerified:{
 partnerOnBoardingSteps:{
     type:Number,
     min:0,
-    max:8,
+    max:3,
     default:0
 },
+partnerApplicationSubmittedAt:{ type:Date },
 mobileNumber:{
 type:String
 },
@@ -71,17 +62,6 @@ default:"pending"
 },
 rejectionReason:{
 type:String
-},
-videoKycStatus:{
-    type:String,
-    enum:[  "not_required" , "pending","in_progress", "approved", "rejected"],
-    default:"not_required"
-},
-videoKycRoomId:{
-     type:String
-},
-videoKycRejectionReason:{
-    type:String
 },
 otp:{
     type:String
@@ -108,6 +88,11 @@ isOnline:{
 }
 
 },{timestamps:true})
+
+userSchema.set("toJSON", { transform: (_doc, ret) => {
+    const allowed = ["_id", "name", "email", "role", "mobileNumber", "partnerStatus", "partnerOnBoardingSteps", "partnerApplicationSubmittedAt", "rejectionReason", "isEmailVerified", "isOnline", "createdAt", "updatedAt"]
+    return Object.fromEntries(Object.entries(ret).filter(([key]) => allowed.includes(key)))
+} })
 
 userSchema.index({location:"2dsphere"})
 

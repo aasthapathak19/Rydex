@@ -54,11 +54,11 @@ function page() {
             setLoading(true)
             try {
                 const { data } = await axios.get("/api/user/bookings")
-                console.log(data)
+
                 setBookings(data)
                 setLoading(false)
             } catch (error: any) {
-                console.log(error.response.data.message)
+
                 setLoading(false)
             }
         }

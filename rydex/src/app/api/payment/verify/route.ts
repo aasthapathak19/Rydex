@@ -36,7 +36,7 @@ export async function POST(req: NextRequest) {
 
     } catch (error) {
  return NextResponse.json(
-                { success: false, message:`verify payment error ${error}`},
+                { success: false, message:"verify payment error"},
                 { status: 500 }
             )
     }

@@ -36,7 +36,7 @@ export async function GET(
             )
     } catch (error) {
  return NextResponse.json(
-                { message: `accept booking error ${error}` },
+                { message: "accept booking error" },
                 { status: 500 }
             )
     }

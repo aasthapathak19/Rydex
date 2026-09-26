@@ -61,7 +61,7 @@ const searchAddress=async (q:string,setResults:(r:Place[])=>void,restrict?:strin
     limit: 5
   }
 })
-    console.log(data)
+
     let results:Place[]=(data.features ?? []).map((f:any)=>({
     id:String(f.properties.osm_id),
     name:f.properties.name,
@@ -77,7 +77,7 @@ const searchAddress=async (q:string,setResults:(r:Place[])=>void,restrict?:strin
     }
     setResults(results)
   } catch (error) {
-    console.log(error)
+
      setResults([])
   }
 }
@@ -98,7 +98,7 @@ const searchAddress=async (q:string,setResults:(r:Place[])=>void,restrict?:strin
             filter:"countrycode:in"
           }
         })
-        console.log(data)
+
        if(data.features.length){
         const p=data.features[0].properties
         const address=[p.name,p.street,p.city,p.state,p.country].filter(Boolean).join(",")
@@ -107,12 +107,14 @@ const searchAddress=async (q:string,setResults:(r:Place[])=>void,restrict?:strin
         setPickUpLat(coords.latitude)
         setPickUpLon(coords.longitude)
         setPickUpSuggestions([])
-        setLocating(false)
        }
+       setLocating(false)
        } catch (error) {
-        console.log(error)
         setLocating(false)
        }
+     }, (error) => {
+       console.error("Geolocation error:", error);
+       setLocating(false);
      })
   }
   return (

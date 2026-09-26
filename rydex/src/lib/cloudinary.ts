@@ -1,4 +1,4 @@
-import { v2 as cloudinary, UploadStream } from 'cloudinary'
+import { v2 as cloudinary } from 'cloudinary'
 
 cloudinary.config({ 
   cloud_name:process.env.CLOUDINARY_CLOUD_NAME, 
@@ -16,7 +16,9 @@ try {
 
     return new Promise((resolve,reject)=>{
       const uploadStream=cloudinary.uploader.upload_stream({
-        resource_type:"auto"
+        resource_type:"image",
+        allowed_formats:["jpg", "png", "webp"],
+        folder:"rydex/vehicles"
       },(error,result)=>{
         if(error){
             reject(error)
@@ -35,7 +37,7 @@ try {
 
 
 } catch (error) {
-    console.log(error)
+    // Do not log provider errors or uploaded content.
     return null
 }
 }

@@ -15,7 +15,7 @@ function Footer() {
         <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-12'>
           <div>
             <h2 className='text-2xl font-bold tracking-wide'>RYDEX</h2>
-            <p className='mt-4 text-gray-400 text-sm leading-relaxed'>Book any vehicle — from bikes to trucks. Trusted owners. Transparent pricing.</p>
+            <p className='mt-4 text-gray-400 text-sm leading-relaxed'>Rydex currently provides ride booking, partner onboarding, vehicle management, real-time tracking, payments and communication. Advanced identity verification, document verification, bank payout setup and video KYC are planned for a future production release.</p>
 
             <div className='flex gap-4 mt-6'>
               {[Facebook, Instagram, Twitter, Linkedin].map((Icon, i) => (

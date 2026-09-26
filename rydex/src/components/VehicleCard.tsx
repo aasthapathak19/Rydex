@@ -52,14 +52,7 @@ estimated=Math.round(vehicle.baseFare +vehicle.pricePerKM*distance)
                     }}
                 />
 
-                <motion.img
-                    src={vehicle.imageUrl}
-                    alt={vehicle.vehicleModel}
-                    className="relative z-10 h-32 w-full object-contain"
-                    style={{ filter: "drop-shadow(0 8px 24px rgba(0,0,0,0.14))" }}
-                    whileHover={{ scale: 1.06, filter: "drop-shadow(0 12px 32px rgba(0,0,0,0.22))" }}
-                    transition={{ duration: 0.35 }}
-                />
+                <Icon size={88} className="relative z-10 text-zinc-600" aria-label={label} />
                 <div className='absolute bottom-3 right-3 z-20 flex items-center gap-1.5 bg-zinc-900 text-white text-[10px] font-bold uppercase tracking-wider px-2.5 py-1.5 rounded-full'>
                     <Icon size={10} />
                     {label}
@@ -76,9 +69,7 @@ estimated=Math.round(vehicle.baseFare +vehicle.pricePerKM*distance)
                 <div className='flex items-start justify-between gap-3'>
                     <div className='min-w-0'>
                         <h3 className='text-zinc-900 text-base font-black tracking-tight leading-tight truncate'>{vehicle.vehicleModel}</h3>
-                        <div className='mt-1.5 inline-flex items-center bg-zinc-100 px-2.5 py-1 rounded-lg border border-zinc-200'>
-                            <span className='text-zinc-500 text-xs font-black tracking-[0.2em] font-mono uppercase'>{vehicle.number}</span>
-                        </div>
+
                     </div>
                     <div className='flex-shrink-0 w-10 h-10 rounded-2xl bg-zinc-100 border border-zinc-200 flex items-center justify-center'>
                         <Icon size={17} className='text-zinc-700' />

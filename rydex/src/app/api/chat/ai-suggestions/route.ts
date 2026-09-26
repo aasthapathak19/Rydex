@@ -58,9 +58,9 @@ RECENT_MESSAGE: ${lastMessage}`
         )
        
     } catch (error) {
-        console.log(error)
+
           return NextResponse.json(
-            {message:`get ai suggestions  error ${error}`},
+            {message:"get ai suggestions  error"},
             {status:500}
         )
     }

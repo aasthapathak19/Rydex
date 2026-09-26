@@ -50,7 +50,6 @@ export async function POST(req: NextRequest) {
                 $in: ["requested", "awaiting_payment", "confirmed", "started"]
             }
         })
-        console.log(existing)
 
         if (existing) {
             return NextResponse.json(
@@ -90,7 +89,7 @@ export async function POST(req: NextRequest) {
 
     } catch (error) {
  return NextResponse.json(
-               {message:`create booking error ${error}`},
+               {message:"create booking error"},
                {status:500}
             )
     }

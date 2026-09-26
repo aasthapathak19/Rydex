@@ -31,10 +31,10 @@ function Nav() {
     const fetchCount=async ()=>{
         try {
             const {data}=await axios.get("/api/partner/bookings/pending-requests-count")
-            console.log(data)
+
             setPendingCount(data)
         } catch (error) {
-            console.log(error)
+
         }
     }
 
@@ -45,7 +45,7 @@ function Nav() {
     },[userData?.role])
      useEffect(()=>{
          const socket=getSocket()
-         console.log(socket)
+
          socket.on("new-booking",(data)=>{
           setPendingCount(prev=>prev+1)
          })

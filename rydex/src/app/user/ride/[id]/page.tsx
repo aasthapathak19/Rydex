@@ -67,13 +67,13 @@ function page() {
                     bookingId:id
                 })
                 setBooking(data)
-                console.log(data)
+
                 setStatus(data.bookingStatus)
                 setPickUpPos([data.pickUpLocation.coordinates[1], data.pickUpLocation.coordinates[0]])
                 setDropPos([data.dropLocation.coordinates[1], data.dropLocation.coordinates[0]])
                 setLoading(false)
             } catch (error: any) {
-                console.log(error.response.data.message)
+
                 setLoading(false)
             }
         }

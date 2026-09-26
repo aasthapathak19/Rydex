@@ -15,7 +15,7 @@ export async function POST(req:NextRequest) {
         )
     } catch (error) {
           return NextResponse.json(
-            {message:`get all messages error ${error}`},
+            {message:"get all messages error"},
             {status:500}
         )
     }

@@ -56,7 +56,7 @@ function page() {
             setBookings(data)
             setLoading(false)
         } catch (error) {
-            console.log(error)
+
             setLoading(false)
         }
     }
@@ -67,7 +67,7 @@ function page() {
            router.push("/partner/bookings")
 
         } catch (error) {
-            console.log(error)
+
         }
     }
 
@@ -78,7 +78,7 @@ function page() {
            const {data}=await axios.get(`/api/partner/bookings/${id}/reject`) 
            window.location.reload()
         } catch (error) {
-            console.log(error)
+
         }
     }
 
@@ -88,7 +88,7 @@ function page() {
 
     useEffect(()=>{
      const socket=getSocket()
-     console.log(socket)
+
      socket.on("new-booking",(data)=>{
        setBookings((prev)=>[...prev,data])
      })

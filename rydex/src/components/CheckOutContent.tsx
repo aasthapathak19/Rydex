@@ -40,7 +40,7 @@ function CheckOutContent() {
   const handleRequestBooking = async () => {
     setLoading(true)
     try {
-      console.log(dropLat)
+
       const { data } = await axios.post("/api/booking/create", {
 
         driverId,
@@ -63,7 +63,7 @@ function CheckOutContent() {
       setStatus("requested")
     } catch (error: any) {
       setLoading(false)
-      console.log(error.response.data.message)
+
     }
   }
 
@@ -155,7 +155,7 @@ function CheckOutContent() {
         }
       }
     } catch (error) {
-      console.log(error)
+
       setLoading(false)
     }
 
@@ -168,7 +168,7 @@ function CheckOutContent() {
       setBooking(data.booking)
       setStatus(data.booking.bookingStatus || data.booking)
     } catch (error) {
-      console.log(error)
+
     }
   }
 
@@ -177,7 +177,7 @@ function CheckOutContent() {
       const { data } = await axios.get(`/api/booking/${booking._id}/cancel`)
      setStatus("idle")
     } catch (error) {
-      console.log(error)
+
     }
   }
 
@@ -302,7 +302,7 @@ function CheckOutContent() {
                         {
                           [
                             { icon: <Clock size={14} />, text: "Driver will respond within 2 minutes" },
-                            { icon: <Shield size={14} />, text: "Verified & insured drivers only" },
+                            { icon: <Shield size={14} />, text: "Partner applications reviewed by admin" },
                             { icon: <CreditCard size={14} />, text: "Pay after driver accepts" },
                           ].map((item, i) => (
                             <div key={i} className="flex items-center gap-3">

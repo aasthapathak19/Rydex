@@ -26,7 +26,7 @@ try {
   
     return conn
 } catch (error) {
-    console.log(error)
+
 }
 
 }

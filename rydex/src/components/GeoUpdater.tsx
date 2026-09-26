@@ -21,7 +21,7 @@ function GeoUpdater({userId}:{userId:string}) {
 
         })
      },(err)=>{
-        console.log(err)
+
      },
      {
         enableHighAccuracy:true,

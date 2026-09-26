@@ -1,7 +1,8 @@
 'use client'
 import React, { useEffect, useState } from 'react'
 import L from "leaflet"
-import { MapContainer, Marker, Polyline, TileLayer, useMap } from 'react-leaflet'
+import 'leaflet/dist/leaflet.css'
+import { MapContainer, Marker, Polyline, TileLayer, useMap, useMapEvents } from 'react-leaflet'
 import axios from 'axios'
 import { AnimatePresence, motion } from 'motion/react'
 import { MapPin, Navigation2 } from 'lucide-react'
@@ -13,11 +14,19 @@ type props = {
   onDistance: (d: number) => void
 }
 
-function FitBounds({ p1, p2 }: { p1: [number, number], p2: [number, number] }) {
+function MapUpdater({ p1, p2 }: { p1?: [number, number], p2?: [number, number] }) {
   const map = useMap()
   useEffect(() => {
-    map.invalidateSize()
-    map.fitBounds([p1, p2], { padding: [72, 72], maxZoom: 15, animate: true, duration: 1 })
+    // Fix for blank map tiles in some edge cases
+    setTimeout(() => { map.invalidateSize() }, 100)
+    
+    if (p1 && p2) {
+      map.fitBounds([p1, p2], { padding: [72, 72], maxZoom: 15, animate: true, duration: 1 })
+    } else if (p1) {
+      map.setView(p1, 15, { animate: true })
+    } else if (p2) {
+      map.setView(p2, 15, { animate: true })
+    }
   }, [p1, p2, map])
   return null
 }
@@ -91,7 +100,7 @@ function SearchMap({ pickUp, drop, onChange, onDistance }: props) {
       const [lon, lat] = data.features[0].geometry.coordinates
       return [lat, lon];
     } catch (error) {
-      console.log(error)
+
       return null
     }
   }
@@ -116,14 +125,14 @@ function SearchMap({ pickUp, drop, onChange, onDistance }: props) {
   const loadRoute = async (p: [number, number], d: [number, number]) => {
     try {
       const { data } = await axios.get(`https://router.project-osrm.org/route/v1/driving/${p[1]},${p[0]};${d[1]},${d[0]}?overview=full&geometries=geojson`)
-      console.log(data)
+
       if (!data.routes.length) return;
       setRoute(data.routes[0].geometry.coordinates.map(([lon, lat]: number[]) => [lat, lon]))
       const distKm = +((data.routes[0].distance) / 1000).toFixed(2)
       setKm(distKm)
       onDistance(distKm)
     } catch (error) {
-      console.log(error)
+
     }
   }
 
@@ -144,6 +153,27 @@ function SearchMap({ pickUp, drop, onChange, onDistance }: props) {
      onChange?.(pickUp,addr!)
   }
 
+  function MapClickHandler() {
+    useMapEvents({
+      click: async (e) => {
+        const { lat, lng } = e.latlng
+        const addr = await reverseGeoCoding(lat, lng)
+        if (addr) {
+          if (!pickUp) {
+            setP1([lat, lng])
+            if (p2) loadRoute([lat, lng], p2)
+            onChange?.(addr, drop)
+          } else {
+            setP2([lat, lng])
+            if (p1) loadRoute(p1, [lat, lng])
+            onChange?.(pickUp, addr)
+          }
+        }
+      }
+    })
+    return null
+  }
+
 
 
 
@@ -152,9 +182,10 @@ function SearchMap({ pickUp, drop, onChange, onDistance }: props) {
     if (pickUp && drop) {
       (async () => {
         const a = await geoCoding(pickUp)
-        console.log(a)
+
         const b = await geoCoding(drop)
         if (!a || !b) {
+          setReady(true)
           return
         }
         await loadRoute(a, b)
@@ -165,6 +196,8 @@ function SearchMap({ pickUp, drop, onChange, onDistance }: props) {
 
       })()
 
+    } else {
+      setReady(true)
     }
   }, [pickUp, drop])
 
@@ -180,11 +213,11 @@ function SearchMap({ pickUp, drop, onChange, onDistance }: props) {
 
 
         <TileLayer
+          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
 
-          attribution='&copy; <a href="https://carto.com/">"CARTO"</a> contributors'
-          url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}.png" />
-
-        {p1 && p2 && <FitBounds p1={p1} p2={p2} />}
+        <MapUpdater p1={p1} p2={p2} />
+        <MapClickHandler />
 
         {p1 && <Marker
           position={p1}
@@ -250,7 +283,7 @@ function SearchMap({ pickUp, drop, onChange, onDistance }: props) {
       </AnimatePresence>
 
       <AnimatePresence>
-        {ready && km!==null && (
+        {ready && route.length > 0 && km!==null && (
           <motion.div
            initial={{ opacity: 0, y: 8, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}

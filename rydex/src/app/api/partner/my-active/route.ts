@@ -18,14 +18,14 @@ const user=await User.findOne({email:session.user.email})
 const booking=await Booking.findOne({
     driver:user._id,
     bookingStatus:{$in:[ "confirmed", "started"]}
-}).populate("user vehicle driver")
+}).populate("user driver", "name email mobileNumber").populate("vehicle", "type vehicleModel number")
 
 return NextResponse.json(booking
                 , { status: 200 }
             )
 
     } catch (error) {
-        return NextResponse.json({ message: `get active ride for partner error ${error}` }
+        return NextResponse.json({ message: "get active ride for partner error" }
                 , { status: 500 }
             )
     }

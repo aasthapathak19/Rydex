@@ -1,4 +1,4 @@
-import mongoose, { Document, Mongoose } from "mongoose";
+import mongoose from "mongoose";
 
 
 
@@ -27,9 +27,10 @@ isEmailVerified:{
 partnerOnBoardingSteps:{
     type:Number,
     min:0,
-    max:8,
+    max:3,
     default:0
 },
+partnerApplicationSubmittedAt:{ type:Date },
 mobileNumber:{
 type:String
 },
@@ -40,17 +41,6 @@ default:"pending"
 },
 rejectionReason:{
 type:String
-},
-videoKycStatus:{
-    type:String,
-    enum:[  "not_required" , "pending","in_progress", "approved", "rejected"],
-    default:"not_required"
-},
-videoKycRoomId:{
-     type:String
-},
-videoKycRejectionReason:{
-    type:String
 },
 otp:{
     type:String

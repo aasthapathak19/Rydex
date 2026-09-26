@@ -55,7 +55,7 @@ export async function POST(req: Request) {
 
     } catch (error) {
        return Response.json(
-                { message: `verify email error ${error}` },
+                { message: "verify email error" },
                 { status: 500 }
             )
     }

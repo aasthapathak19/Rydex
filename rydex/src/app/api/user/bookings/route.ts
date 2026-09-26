@@ -16,7 +16,7 @@ export async function GET(req:NextRequest) {
 
                 const user=await User.findOne({email:session.user.email})
 
-          const bookings=await Booking.find({user:user._id}).populate("user driver vehicle")
+          const bookings=await Booking.find({user:user._id}).populate("user driver", "name email mobileNumber").populate("vehicle", "type vehicleModel number")
           .sort({createdAt:-1}) 
           
           
@@ -25,7 +25,7 @@ export async function GET(req:NextRequest) {
             {status:200}
           )
     } catch (error) {
-        return NextResponse.json({ message: `get bookings for partner error ${error}`}
+        return NextResponse.json({ message: "get bookings for partner error"}
                         , { status: 400 }
                     )
     }

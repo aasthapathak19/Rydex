@@ -43,7 +43,7 @@ export async function POST(req:NextRequest) {
             type:vehicleType,
             status:"approved",
             isActive:true
-        }).lean()
+        }).select("owner type vehicleModel baseFare pricePerKM waitingCharge").lean()
 
        return NextResponse.json(
                 vehicles,
@@ -53,7 +53,7 @@ export async function POST(req:NextRequest) {
 
     } catch (error) {
         return NextResponse.json(
-                {message:`near by vehicles error ${error}`},
+                {message:"near by vehicles error"},
                 {status:500}
             )
     }

@@ -1,71 +1,27 @@
-import { auth } from "@/auth";
-import connectDb from "@/lib/db";
-import User from "@/models/user.model";
-import Vehicle from "@/models/vehicle.model";
-import { NextRequest, NextResponse } from "next/server";
+import { auth } from "@/auth"
+import connectDb from "@/lib/db"
+import { PROFILE_FIELDS, VEHICLE_FIELDS } from "@/lib/partner-application"
+import User from "@/models/user.model"
+import Vehicle from "@/models/vehicle.model"
 
-export async function GET(req: NextRequest) {
+export async function GET() {
     try {
-        await connectDb()
         const session = await auth()
-        if (!session || !session.user?.email || session.user.role !== "admin") {
-            return Response.json({ message: "unauthorized" }
-                , { status: 400 }
-            )
-        }
-        const totalPartners = await User.countDocuments({ role: "partner" })
-        const totalApprovedPartners = await User.countDocuments({ role: "partner", partnerStatus: "approved" })
-        const totalPendingPartners = await User.countDocuments({ role: "partner", partnerStatus: "pending" })
-        const totalRejectedPartners = await User.countDocuments({ role: "partner", partnerStatus: "rejected" })
-
-        const pendingPartnerUsers = await User.find({
-            role: "partner",
-            partnerStatus: "pending",
-            partnerOnBoardingSteps: {$gte:3}
-        })
-        console.log(pendingPartnerUsers)
-        const partnerIds = pendingPartnerUsers.map((p) => p._id)
-        const partnerVehicles = await Vehicle.find({
-            owner: { $in: partnerIds }
-        })
-        const vehicleTypeMap = new Map(
-            partnerVehicles.map((v) => [String(v.owner), v.type])
-        )
-
-        const pendingPartnersReviews = pendingPartnerUsers.map((p) => ({
-            _id: p._id,
-            name: p.name,
-            email: p.email,
-            vehicleType: vehicleTypeMap.get(String(p._id))
-        }))
-
-
-        const pendingVehicles=await Vehicle.find({
-            status:"pending",
-            baseFare:{$exists:true},
-             pricePerKM:{$exists:true}
-        }).populate("owner")
-
-
-
-        return NextResponse.json({
-            pendingVehicles,
-            stats:{ 
-                totalPartners,
-            totalApprovedPartners,
-            totalPendingPartners,
-            totalRejectedPartners
-        },
-            pendingPartnersReviews
-        }, {
-            status: 200
-        })
-
-    } catch (error) {
-        return NextResponse.json({
-            message: `admin dashboard error ${error}`
-        }, {
-            status: 500
-        })
+        if (!session?.user?.email) return Response.json({ message: "Unauthorized" }, { status: 401 })
+        await connectDb()
+        const admin = await User.findOne({ email: session.user.email }).select("role")
+        if (admin?.role !== "admin") return Response.json({ message: "Admin access required" }, { status: 403 })
+        const [totalPartners, totalApprovedPartners, totalPendingPartners, totalRejectedPartners, pendingPartnersReviews] = await Promise.all([
+            User.countDocuments({ role: "partner" }),
+            User.countDocuments({ role: "partner", partnerStatus: "approved" }),
+            User.countDocuments({ role: "partner", partnerStatus: "pending", partnerApplicationSubmittedAt: { $ne: null } }),
+            User.countDocuments({ role: "partner", partnerStatus: "rejected" }),
+            User.find({ role: "partner", partnerStatus: "pending", partnerApplicationSubmittedAt: { $ne: null } }).select(PROFILE_FIELDS)
+        ])
+        const pendingVehicles = await Vehicle.find({ owner: { $in: pendingPartnersReviews.map(partner => partner._id) }, status: "pending" })
+            .select(VEHICLE_FIELDS).populate("owner", "name email")
+        return Response.json({ stats: { totalPartners, totalApprovedPartners, totalPendingPartners, totalRejectedPartners }, pendingPartnersReviews, pendingVehicles })
+    } catch {
+        return Response.json({ message: "Unable to load applications" }, { status: 500 })
     }
 }

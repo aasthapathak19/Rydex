@@ -77,10 +77,10 @@ function page() {
     const handleSendPickUpOtp = async () => {
         try {
             const { data } = await axios.post("/api/partner/bookings/otp/pickup/send", { bookingId: booking?._id })
-            console.log(data)
+
             setOtpMode(true)
         } catch (error: any) {
-            console.log(error.response.data.message)
+
         }
     }
     const handleSendDropOtp = async () => {
@@ -88,7 +88,7 @@ function page() {
             const { data } = await axios.post("/api/partner/bookings/otp/drop/send", { bookingId: booking?._id })
             setDropOtpMode(true)
         } catch (error) {
-            console.log(error)
+
         }
     }
     const handleVerifyPickUpOtp = async () => {
@@ -101,7 +101,7 @@ function page() {
             setStatus("started")
            setBooking(prev=>prev?{...prev,bookingStatus:"started"}:prev)
         } catch (error:any) {
-            console.log(error)
+
               setLoadingOtp(false)
             setOtpError(error.response.data.message ?? "Verification failed")
         }
@@ -115,7 +115,7 @@ function page() {
             setStatus("completed")
             setBooking(prev=>prev?{...prev,bookingStatus:"completed"}:prev)
         } catch (error:any) {
-            console.log(error)
+
               setLoadingDropOtp(false)
             setDropOtpError(error.response.data.message ?? "Verification failed")
         }
@@ -134,14 +134,13 @@ function page() {
                     return
                 }
                 setBooking(data)
-                console.log(data)
-              
+
                 setStatus(data.bookingStatus)
                 setPickUpPos([data.pickUpLocation.coordinates[1], data.pickUpLocation.coordinates[0]])
                 setDropPos([data.dropLocation.coordinates[1], data.dropLocation.coordinates[0]])
                 setLoading(false)
             } catch (error: any) {
-                console.log(error.response.data.message)
+
                 setLoading(false)
             }
         }

@@ -34,7 +34,7 @@ export async function GET(req:NextRequest) {
 
     } catch (error) {
          return NextResponse.json(
-                        { message: `get active booking error ${error}`},
+                        { message: "get active booking error"},
                         { status: 400 }
                     )
     }
