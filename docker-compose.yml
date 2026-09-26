@@ -6,6 +6,7 @@ services:
       - "3001:3000"
     environment:
       - NEXT_PUBLIC_SOCKET_SERVER_URL=http://localhost:5000
+      - MONGODB_URL=mongodb://mongo:27017/rydex
     env_file:
       - ./rydex/.env
     depends_on:
@@ -19,6 +20,8 @@ services:
       context: ./socketServer
     ports:
       - "5000:5000"
+    environment:
+      - MONGODB_URL=mongodb://mongo:27017/rydex
     env_file:
       - ./socketServer/.env
     depends_on:

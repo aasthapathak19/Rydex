@@ -36,10 +36,10 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
          throw Error("incorrect Password")
       }
       return {
-        id:user._id,
-        name:user.name,
-        email:user.email,
-        role:user.role
+        id: user._id.toString(),
+        name: user.name,
+        email: user.email,
+        role: user.role
       }
   },
 }),
