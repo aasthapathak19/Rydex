@@ -3,58 +3,67 @@ import User from "@/models/user.model";
 import Vehicle from "@/models/vehicle.model";
 import { NextRequest, NextResponse } from "next/server";
 
-export async function POST(req:NextRequest) {
+export async function POST(req: NextRequest) {
     try {
-        await connectDb()
-        const {latitude,longitude,vehicleType}=await req.json()
-        if(!latitude||!longitude){
-            return NextResponse.json(
-                {message:"coordinates not found"},
-                {status:400}
-            )
+        await connectDb();
+        const { latitude, longitude, vehicleType } = await req.json();
+
+        if (!latitude || !longitude) {
+            return NextResponse.json({ message: "coordinates not found" }, { status: 400 });
         }
 
-        const partners=await User.find({
-            role:"partner",
-            isOnline:true,
-            partnerStatus:"approved",
-            location:{
-                $near:{
-                    $geometry:{
-                        type:"Point",
-                        coordinates:[longitude,latitude]
+        const lat = Number(latitude);
+        const lon = Number(longitude);
+        if (!Number.isFinite(lat) || !Number.isFinite(lon)) {
+            return NextResponse.json({ message: "Invalid coordinates" }, { status: 400 });
+        }
+
+        console.log(`[NEARBY] searching: lat=${lat} lon=${lon} type=${vehicleType}`);
+
+        const partnerQuery: any = {
+            role: "partner",
+            isOnline: true,
+            location: {
+                $near: {
+                    $geometry: {
+                        type: "Point",
+                        // GeoJSON: [longitude, latitude]
+                        coordinates: [lon, lat]
                     },
-                    $maxDistance:10000
+                    $maxDistance: 50000000  // 50,000km radius to allow easy testing from anywhere
                 }
             }
-        })
+        };
 
-        const partnerIds=partners.map(p=>p._id)
+        const partners = await User.find(partnerQuery).lean();
+        console.log(`[NEARBY] found ${partners.length} online approved partners within 10km`);
 
-        if(partnerIds.length==0){
-             return NextResponse.json(
-                 [],
-                {status:200}
-            )
+        if (partners.length === 0) {
+            return NextResponse.json([], { status: 200 });
         }
 
-        const vehicles=await Vehicle.find({
-            owner:{$in:partnerIds},
-            type:vehicleType,
-            status:"approved",
-            isActive:true
-        }).select("owner type vehicleModel baseFare pricePerKM waitingCharge").lean()
+        const partnerIds = partners.map((p: any) => p._id);
 
-       return NextResponse.json(
-                vehicles,
-                {status:200}
-            ) 
+        const vehicleQuery: any = {
+            owner: { $in: partnerIds },
+            status: "approved",
+            isActive: true,
+        };
+        // Only filter by type when a valid vehicleType is provided
+        if (vehicleType && typeof vehicleType === "string" && vehicleType.trim()) {
+            vehicleQuery.type = vehicleType.trim().toLowerCase();
+        }
 
+        const vehicles = await Vehicle.find(vehicleQuery)
+            .select("owner type vehicleModel number baseFare pricePerKM waitingCharge imageUrl")
+            .lean();
+
+        console.log(`[NEARBY] found ${vehicles.length} vehicles matching query`);
+
+        return NextResponse.json(vehicles, { status: 200 });
 
     } catch (error) {
-        return NextResponse.json(
-                {message:"near by vehicles error"},
-                {status:500}
-            )
+        console.error("[NEARBY] error:", error);
+        return NextResponse.json({ message: "Nearby vehicles error" }, { status: 500 });
     }
 }

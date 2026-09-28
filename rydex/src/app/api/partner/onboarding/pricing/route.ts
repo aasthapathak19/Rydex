@@ -40,7 +40,8 @@ export async function POST(req: Request) {
         partner.rejectionReason = undefined
         await partner.save()
         return Response.json({ message: "Saved. Review your application before submitting." })
-    } catch {
+    } catch (error) {
+        console.error("[PRICING ERROR]", error)
         return Response.json({ message: "Unable to save vehicle image and pricing" }, { status: 500 })
     }
 }

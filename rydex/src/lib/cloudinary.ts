@@ -11,6 +11,11 @@ if(!file){
     return null
 }
 try {
+    if (!process.env.CLOUDINARY_API_KEY || process.env.CLOUDINARY_API_KEY.includes('your_')) {
+        console.log('[CLOUDINARY MOCK] Fake credentials detected, returning dummy vehicle URL');
+        return 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/86/Auto-rickshaw_India.jpg/320px-Auto-rickshaw_India.jpg';
+    }
+
     const arrayBuffer=await file.arrayBuffer()
     const buffer=Buffer.from(arrayBuffer)
 

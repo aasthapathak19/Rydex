@@ -54,12 +54,28 @@ function AuthModal({ open, onClose }: propType) {
     }
 
     const handleLogin = async () => {
+        if (!email || !password) {
+            setErr("Please enter email and password")
+            return
+        }
         setLoading(true)
-        const res = await signIn("credentials", {
-            email, password, redirect: false
-        })
-        setLoading(false)
-
+        setErr("")
+        try {
+            const res = await signIn("credentials", {
+                email, password, redirect: false
+            })
+            setLoading(false)
+            if (res?.error) {
+                setErr("Invalid email or password. Please try again.")
+            } else if (res?.ok) {
+                // Success — close modal and reload to update session
+                onClose()
+                window.location.reload()
+            }
+        } catch (error) {
+            setLoading(false)
+            setErr("Something went wrong. Please try again.")
+        }
     }
 
     const handleGoogleLogin = async () => {
@@ -143,7 +159,7 @@ function AuthModal({ open, onClose }: propType) {
                                                 </div>
 
                                                 <button className='w-full h-11 rounded-xl bg-black text-white font-semibold hover:bg-gray-900 transition flex justify-center items-center' onClick={handleLogin}>{!loading ? "Login" : <CircleDashed size={18} color='white' className='animate-spin' />}</button>
-
+                                                {err && <div className='text-red-500 text-xs text-center font-medium bg-red-50 border border-red-200 rounded-lg px-3 py-2'>{err}</div>}
                                             </div>
                                             <p className='mt-6 text-center text-sm text-gray-500'> Don’t have an account? <div onClick={() => setStep("signup")} className='text-black font-medium hover:underline'>Sign Up</div></p>
 
